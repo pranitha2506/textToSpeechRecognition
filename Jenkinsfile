@@ -23,65 +23,7 @@ pipeline {
             }
         }
         
-stage('Deploy to Kubernetes') {
-    steps {
-        bat 'kubectl apply -f deployment.yaml'
-        bat 'kubectl apply -f service.yaml'
-        bat 'kubectl rollout status deployment/texttospeech --timeout=120s'
-        bat 'kubectl get pods'
-        bat 'kubectl get services'
-    }
-}
 
-stage('Build Selenium Test Image') {
-    steps {
-        bat 'docker build -f selenium/Dockerfile -t tts-selenium-tests:v1 .'
-    }
-}
-
-stage('Run Selenium Tests') {
-    steps {
-        bat '''
-            @echo off
-
-            docker network inspect tts-selenium-net >NUL 2>&1
-            if errorlevel 1 docker network create tts-selenium-net
-
-            docker rm -f selenium-chrome 2>NUL
-
-            docker run -d --name selenium-chrome ^
-                --network tts-selenium-net ^
-                -p 4444:4444 ^
-                selenium/standalone-chrome:latest
-
-            if errorlevel 1 exit /b 1
-
-            curl.exe --fail --retry 30 --retry-delay 2 ^
-                --retry-connrefused http://localhost:4444/status
-
-            if errorlevel 1 exit /b 1
-
-            docker run --rm ^
-                --network tts-selenium-net ^
-                -e SELENIUM_URL=http://selenium-chrome:4444/wd/hub ^
-                -e APP_URL=http://host.docker.internal:30080 ^
-                tts-selenium-tests:v1
-
-            if errorlevel 1 exit /b 1
-
-            docker rm -f selenium-chrome
-        '''
-    }
-}
-
-stage('Monitor Kubernetes Application') {
-    steps {
-        bat 'kubectl get deployment texttospeech'
-        bat 'kubectl get pods'
-        bat 'kubectl get service texttospeech-service'
-        bat 'curl.exe --fail --retry 10 --retry-delay 2 --retry-connrefused http://localhost:30080/'
-    }
-}
 
  stage('Docker Login') {
             steps {
