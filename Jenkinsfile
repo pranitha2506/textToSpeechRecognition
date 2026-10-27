@@ -22,27 +22,26 @@ pipeline {
                 bat 'docker run --rm texttospeech:v1 python -m pytest -v tests/test_app.py'
             }
         }
-stage('Docker Login') {
+ stage('Docker Login') {
             steps {
                   bat 'docker login -u pranithapadtham -p Pranitha@123'
                 }
             }
-stage('Push Docker Image to Docker Hub') {
-    steps {
-        echo 'Pushing Docker Image to Docker Hub'
+       
+        stage('Push Docker Image to Docker Hub') {
+            steps {
+                echo 'Pushing Docker Image to Docker Hub'
 
-        bat 'docker tag texttospeech:v1 pranithapadtham/texttospeech:kubeimage1'
-
-        bat 'docker push pranithapadtham/texttospeech:kubeimage1'
-    }
-}
-```
+                bat 'docker tag texttospeech:v1 pranithapadtham/texttospeech:kubeimage1'
+                bat 'docker push pranithapadtham/texttospeech:kubeimage1'
+            }
+        }
 
         stage('Deploy Application') {
             steps {
                 echo 'Deploying application on port 5001'
 
-                bat 'docker rm -f tts-app 2>NUL || ver > nul'
+                bat 'docker rm -f tts-app 2>NUL'
                 bat 'docker run -d --name tts-app -p 5001:5000 texttospeech:v1'
             }
         }
@@ -63,6 +62,7 @@ stage('Push Docker Image to Docker Hub') {
         success {
             echo 'Text-to-Speech pipeline completed successfully!'
             echo 'Tests passed, image pushed, and application deployed.'
+            echo 'Application URL: http://localhost:5001'
         }
 
         failure {
