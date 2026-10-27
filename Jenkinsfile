@@ -14,6 +14,14 @@ pipeline {
             }
         }
 
+stage('Check Python') {
+    steps {
+        bat 'where python'
+        bat 'where py'
+        bat 'echo %PATH%'
+    }
+}
+
        
 stage('Install Dependencies') {
     steps {
