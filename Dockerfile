@@ -1,15 +1,10 @@
 
 FROM python:3.12-slim
 
-WORKDIR /app
+WORKDIR /tests
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir pytest selenium
 
-COPY app.py .
-COPY templates ./templates
-COPY tests ./tests
+COPY tests/test_selenium.py .
 
-EXPOSE 5000
-
-CMD ["python", "app.py"]
+CMD ["python", "-m", "pytest", "-v", "test_selenium.py"]
