@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
 
@@ -12,20 +11,22 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                echo 'Building application image'
+                echo 'Building Text-to-Speech Docker image'
                 bat 'docker build -t texttospeech:v1 .'
             }
         }
 
         stage('Run Unit Tests') {
             steps {
-                echo 'Running tests inside Docker'
+                echo 'Running unit tests inside Docker'
                 bat 'docker run --rm texttospeech:v1 python -m pytest -v tests/test_app.py'
             }
         }
 
         stage('Docker Hub Login and Push') {
             steps {
+                echo 'Logging in to Docker Hub'
+
                 withCredentials([
                     usernamePassword(
                         credentialsId: 'dockerhub-credentials',
@@ -57,7 +58,8 @@ pipeline {
 
         stage('Deploy Application') {
             steps {
-                echo 'Deploying application'
+                echo 'Deploying application on port 5001'
+
                 bat 'docker rm -f tts-app 2>NUL || ver > nul'
                 bat 'docker run -d --name tts-app -p 5001:5000 texttospeech:v1'
             }
@@ -65,8 +67,11 @@ pipeline {
 
         stage('Monitor Application') {
             steps {
-                echo 'Checking application'
+                echo 'Checking application endpoint'
+
                 bat 'curl.exe --fail --retry 10 --retry-delay 2 --retry-connrefused http://localhost:5001/'
+
+                echo 'Showing application logs'
                 bat 'docker logs --tail 50 tts-app'
             }
         }
@@ -74,11 +79,16 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline completed successfully!'
+            echo 'Text-to-Speech pipeline completed successfully!'
+            echo 'Tests passed, image pushed, and application deployed.'
         }
+
         failure {
-            echo 'Pipeline failed. Check Jenkins Console Output.'
+            echo 'Pipeline failed. Check the Jenkins Console Output.'
+        }
+
+        always {
+            echo 'DevOps pipeline execution finished.'
         }
     }
 }
-```
