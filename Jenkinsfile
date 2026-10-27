@@ -14,12 +14,14 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
-            steps {
-                bat 'python --version'
-                bat 'python -m pip install -r requirements.txt'
-            }
-        }
+       
+stage('Install Dependencies') {
+    steps {
+        bat '"C:\\Users\\YourName\\AppData\\Local\\Programs\\Python\\Python312\\python.exe" --version'
+        bat '"C:\\Users\\YourName\\AppData\\Local\\Programs\\Python\\Python312\\python.exe" -m pip install -r requirements.txt'
+    }
+}
+
 
         stage('Test') {
             steps {
