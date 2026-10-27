@@ -27,7 +27,6 @@ stage('Docker Login') {
                   bat 'docker login -u pranithapadtham -p Pranitha@123'
                 }
             }
-       ```groovy
 stage('Push Docker Image to Docker Hub') {
     steps {
         echo 'Pushing Docker Image to Docker Hub'
