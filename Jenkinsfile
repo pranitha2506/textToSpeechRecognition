@@ -27,15 +27,17 @@ stage('Docker Login') {
                   bat 'docker login -u pranithapadtham -p Pranitha@123'
                 }
             }
-        stage('push Docker Image to Docker Hub') {
-            steps {
-                echo "push Docker Image to Docker Hub"
-                bat "docker tag kubdemoapp:v1 pranithapadtham/texttospeech:kubeimage1"               
-                    
-                bat "docker push pranithapadtham/texttospeech:kubeimage1"
-                
-            }
-        }
+       ```groovy
+stage('Push Docker Image to Docker Hub') {
+    steps {
+        echo 'Pushing Docker Image to Docker Hub'
+
+        bat 'docker tag texttospeech:v1 pranithapadtham/texttospeech:kubeimage1'
+
+        bat 'docker push pranithapadtham/texttospeech:kubeimage1'
+    }
+}
+```
 
         stage('Deploy Application') {
             steps {
