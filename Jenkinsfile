@@ -22,37 +22,18 @@ pipeline {
                 bat 'docker run --rm texttospeech:v1 python -m pytest -v tests/test_app.py'
             }
         }
-
-        stage('Docker Hub Login and Push') {
+stage('Docker Login') {
             steps {
-                echo 'Logging in to Docker Hub'
-
-                withCredentials([
-                    usernamePassword(
-                        credentialsId: 'dockerhub-credentials',
-                        usernameVariable: 'pranithapadtham',
-                        passwordVariable: 'Pranitha@123'
-                    )
-                ]) {
-                    bat '''
-                        echo Pranitha@123 | docker login -u "pranithapadtham" --password-stdin
-                        if errorlevel 1 exit /b 1
-
-                        docker tag texttospeech:v1 pranithapadtham/texttospeech:latest
-                        if errorlevel 1 exit /b 1
-
-                        docker tag texttospeech:v1 pranithapadtham/texttospeech:v1
-                        if errorlevel 1 exit /b 1
-
-                        docker push pranithapadtham/texttospeech:latest
-                        if errorlevel 1 exit /b 1
-
-                        docker push pranithapadtham/texttospeech:v1
-                        if errorlevel 1 exit /b 1
-
-                        docker logout
-                    '''
+                  bat 'docker login -u pranithapadtham -p Pranitha@123'
                 }
+            }
+        stage('push Docker Image to Docker Hub') {
+            steps {
+                echo "push Docker Image to Docker Hub"
+                bat "docker tag kubdemoapp:v1 pranithapadtham/texttospeech:kubeimage1"               
+                    
+                bat "docker push pranithapadtham/texttospeech:kubeimage1"
+                
             }
         }
 
