@@ -8,6 +8,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app.py .
 COPY templates ./templates
+COPY tests ./tests
 
 EXPOSE 5000
 
