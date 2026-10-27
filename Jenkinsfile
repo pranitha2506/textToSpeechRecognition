@@ -1,22 +1,24 @@
-```groovy
 pipeline {
     agent any
 
     stages {
-
-        stage('1. Code Checkout') {
+        stage('Checkout') {
             steps {
-                echo 'Checking out Text-to-Speech source code'
+                echo 'Checking out Text-to-Speech project'
                 checkout scm
             }
         }
 
-        stage('2. Run Selenium Tests with pytest') {
+        stage('Install Dependencies') {
             steps {
-                echo 'Installing Python test dependencies'
+                echo 'Installing Python dependencies'
                 bat 'python -m pip install -r requirements.txt'
                 bat 'python -m pip install selenium pytest'
+            }
+        }
 
+        stage('Run Selenium Tests') {
+            steps {
                 echo 'Starting Text-to-Speech application'
                 bat 'start "TTS App" /B python app.py'
 
@@ -28,70 +30,63 @@ pipeline {
             }
         }
 
-        stage('3. Build Docker Image') {
+        stage('Run Unit Tests') {
+            steps {
+                echo 'Running application unit tests'
+                bat 'python -m pytest -v tests/test_app.py'
+            }
+        }
+
+        stage('Build Docker Image') {
             steps {
                 echo 'Building Docker image'
-                bat 'docker build -t text-to-speech:%BUILD_NUMBER% .'
+                bat 'docker build -t texttospeech:v1 .'
             }
         }
 
-        stage('4. Run Application Unit Tests') {
+        stage('Docker Hub Login and Push') {
             steps {
-                echo 'Running unit tests inside Docker'
-                bat 'docker run --rm text-to-speech:%BUILD_NUMBER% python -m pytest -v tests/test_app.py'
-            }
-        }
-
-        stage('5. Release Docker Image') {
-            steps {
-                echo 'Creating release tag'
-                bat 'docker tag text-to-speech:%BUILD_NUMBER% text-to-speech:release-%BUILD_NUMBER%'
-            }
-        }
-
-        stage('6. Push Image to Docker Hub') {
-            steps {
-                echo 'Logging in and pushing Docker image'
-
                 withCredentials([
                     usernamePassword(
                         credentialsId: 'dockerhub-credentials',
-                        usernameVariable: 'padthampranitha',
-                        passwordVariable: 'Pranitha@123'
+                        usernameVariable: 'DH_USER',
+                        passwordVariable: 'DH_TOKEN'
                     )
                 ]) {
                     bat '''
                         echo %DH_TOKEN% | docker login -u "%DH_USER%" --password-stdin
-                        docker tag text-to-speech:release-%BUILD_NUMBER% pranithapadtham/texttospeech:latest
-                        docker tag text-to-speech:release-%BUILD_NUMBER% pranithapadtham/texttospeech:v%BUILD_NUMBER%
-                        docker push pranithapadtham/texttospeech:latest
-                        docker push pranithapadtham/texttospeech:v%BUILD_NUMBER%
+                        if errorlevel 1 exit /b 1
+
+                        docker tag texttospeech:v1 padthampranitha/texttospeech:latest
+                        if errorlevel 1 exit /b 1
+
+                        docker tag texttospeech:v1 padthampranitha/texttospeech:v1
+                        if errorlevel 1 exit /b 1
+
+                        docker push padthampranitha/texttospeech:latest
+                        if errorlevel 1 exit /b 1
+
+                        docker push padthampranitha/texttospeech:v1
+                        if errorlevel 1 exit /b 1
+
                         docker logout
                     '''
                 }
             }
         }
 
-        stage('7. Deploy and Operate') {
+        stage('Deploy Application') {
             steps {
-                echo 'Removing previous container if present'
+                echo 'Deploying Text-to-Speech application'
                 bat 'docker rm -f tts-app 2>NUL || exit /b 0'
-
-                echo 'Deploying application container'
-                bat 'docker run -d --name tts-app -p 5001:5000 text-to-speech:release-%BUILD_NUMBER%'
-
-                echo 'Checking container status'
-                bat 'docker ps'
-                bat 'docker inspect tts-app'
+                bat 'docker run -d --name tts-app -p 5001:5000 texttospeech:v1'
             }
         }
 
-        stage('8. Monitor Application') {
+        stage('Monitor Application') {
             steps {
-                echo 'Checking application endpoint'
+                echo 'Checking application'
                 bat 'curl.exe --fail --retry 5 --retry-delay 2 --retry-connrefused http://localhost:5001/'
-
-                echo 'Displaying recent application logs'
                 bat 'docker logs --tail 50 tts-app'
             }
         }
@@ -99,13 +94,15 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline completed successfully!'
-            echo 'Selenium tests passed, image published, and application deployed.'
+            echo 'Text-to-Speech pipeline completed successfully!'
         }
 
         failure {
-            echo 'Pipeline failed. Please check the Jenkins Console Output.'
+            echo 'Pipeline failed. Check Jenkins Console Output.'
+        }
+
+        always {
+            echo 'DevOps pipeline execution finished.'
         }
     }
 }
-```
