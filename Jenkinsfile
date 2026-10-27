@@ -9,7 +9,6 @@ pipeline {
     environment {
         IMAGE_NAME = 'text-to-speech'
         CONTAINER_NAME = 'tts-app'
-        APP_PORT = '5001'
     }
 
     stages {
@@ -39,19 +38,13 @@ pipeline {
             }
         }
 
-        stage('5. Deploy') {
+        stage('5. Remove Old Container') {
             steps {
-                bat '''
-                docker rm -f tts-app
-                '''
-                script {
-                    // A missing old container is acceptable.
-                    // Deployment continues in the next command.
-                }
+                bat 'docker rm -f tts-app 2>NUL || exit /b 0'
             }
         }
 
-        stage('6. Start Application') {
+        stage('6. Deploy Application') {
             steps {
                 bat 'docker run -d --name tts-app -p 5001:5000 text-to-speech:release-%BUILD_NUMBER%'
             }
@@ -78,7 +71,7 @@ pipeline {
         }
 
         failure {
-            echo 'Pipeline failed. Check the Console Output for the failed stage.'
+            echo 'Pipeline failed. Check Console Output for the error.'
         }
     }
 }
