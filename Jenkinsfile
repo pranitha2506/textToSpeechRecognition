@@ -30,24 +30,24 @@ pipeline {
                 withCredentials([
                     usernamePassword(
                         credentialsId: 'dockerhub-credentials',
-                        usernameVariable: 'DH_USER',
-                        passwordVariable: 'DH_TOKEN'
+                        usernameVariable: 'pranithapadtham',
+                        passwordVariable: 'Pranitha@123'
                     )
                 ]) {
                     bat '''
-                        echo %DH_TOKEN% | docker login -u "%DH_USER%" --password-stdin
+                        echo Pranitha@123 | docker login -u "pranithapadtham" --password-stdin
                         if errorlevel 1 exit /b 1
 
-                        docker tag texttospeech:v1 padthampranitha/texttospeech:latest
+                        docker tag texttospeech:v1 pranithapadtham/texttospeech:latest
                         if errorlevel 1 exit /b 1
 
-                        docker tag texttospeech:v1 padthampranitha/texttospeech:v1
+                        docker tag texttospeech:v1 pranithapadtham/texttospeech:v1
                         if errorlevel 1 exit /b 1
 
-                        docker push padthampranitha/texttospeech:latest
+                        docker push pranithapadtham/texttospeech:latest
                         if errorlevel 1 exit /b 1
 
-                        docker push padthampranitha/texttospeech:v1
+                        docker push pranithapadtham/texttospeech:v1
                         if errorlevel 1 exit /b 1
 
                         docker logout
