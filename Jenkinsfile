@@ -26,11 +26,13 @@ pipeline {
             }
         }
 
-        stage('3. Test Application') {
-            steps {
-                bat 'docker run --rm text-to-speech:%BUILD_NUMBER% python -m unittest discover -s tests -v'
-            }
-        }
+       
+stage('3. Test Application') {
+    steps {
+        bat 'docker run --rm text-to-speech:%BUILD_NUMBER% python -m pytest -v tests'
+    }
+}
+
 
         stage('4. Release') {
             steps {
