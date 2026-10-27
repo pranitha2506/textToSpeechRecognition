@@ -1,0 +1,91 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Text to Speech</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 650px;
+            margin: 70px auto;
+            padding: 20px;
+            background: #f1f5f9;
+            text-align: center;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+        }
+        textarea {
+            width: 95%;
+            height: 150px;
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            padding: 12px 20px;
+            margin: 8px;
+            cursor: pointer;
+            background: #2563eb;
+            color: white;
+            border: 0;
+            border-radius: 6px;
+        }
+        #status { color: #166534; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Text-to-Speech Application</h1>
+        <p>Enter your text and listen to it.</p>
+
+        <textarea id="text" placeholder="Type your text here..."></textarea>
+        <br>
+        <button onclick="speakText()">Speak</button>
+        <button onclick="stopSpeech()">Stop</button>
+        <p id="status">Ready</p>
+    </div>
+
+    <script>
+        function speakText() {
+            const text = document.getElementById("text").value.trim();
+
+            if (!text) {
+                document.getElementById("status").textContent =
+                    "Please enter some text.";
+                return;
+            }
+
+            if (!("speechSynthesis" in window)) {
+                document.getElementById("status").textContent =
+                    "Speech is not supported in this browser.";
+                return;
+            }
+
+            window.speechSynthesis.cancel();
+            const speech = new SpeechSynthesisUtterance(text);
+            speech.lang = "en-US";
+
+            speech.onstart = function () {
+                document.getElementById("status").textContent =
+                    "Speaking...";
+            };
+
+            speech.onend = function () {
+                document.getElementById("status").textContent =
+                    "Speech completed.";
+            };
+
+            window.speechSynthesis.speak(speech);
+        }
+
+        function stopSpeech() {
+            window.speechSynthesis.cancel();
+            document.getElementById("status").textContent = "Speech stopped.";
+        }
+    </script>
+</body>
+</html>
